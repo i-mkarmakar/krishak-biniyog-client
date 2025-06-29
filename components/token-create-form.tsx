@@ -134,6 +134,7 @@ export function TokenCreateForm() {
       } else {
         handleError("Unknown error occurred", true);
       }
+    }
   }
 
 
