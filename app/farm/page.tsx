@@ -2,7 +2,6 @@
 
 import { TokenFarmList } from "@/components/token-farm-list";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { siteConfig } from "@/config/site";
 import { BadgePlus } from 'lucide-react';
 import Link from "next/link";
