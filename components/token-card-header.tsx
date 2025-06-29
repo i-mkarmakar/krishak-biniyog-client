@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { FarmTokenMetadata } from "@/types/farm-token-metadata";
 import { Button } from "./ui/button";
 import { JSX } from "react";
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -189,11 +190,16 @@ export function TokenCardHeader(props: TokenCardHeaderProps): JSX.Element {
                       </div>
                     ) : passportData ? (
                       <div className="space-y-4">
-                        <img
-                          src={passportData}
-                          alt="Farmer ID"
-                          className="w-full rounded-lg"
-                        />
+{passportData && typeof passportData === 'string' && (
+  <Image
+    src={passportData}
+    alt="Farmer ID"
+    className="w-full rounded-lg"
+    width={500}
+    height={300}
+    unoptimized
+  />
+)}
                       </div>
                     ) : (
                       <p className="text-center text-muted-foreground">
