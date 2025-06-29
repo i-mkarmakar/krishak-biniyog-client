@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { formatEther, parseEther } from "viem";
+import {parseEther } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { z } from "zod";
 import { Button } from "./ui/button";
@@ -93,11 +93,16 @@ export function TokenReturnInvestmentDialog(props: {
       props.onReturn?.();
       form.reset();
       setIsOpen(false);
-    } catch (error: any) {
-      handleError(error, true);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        handleError(error, true);
+      } else {
+        handleError(new Error("Unknown error"), true);
+      }
     } finally {
       setIsFormSubmitting(false);
     }
+    
   }
 
   return (

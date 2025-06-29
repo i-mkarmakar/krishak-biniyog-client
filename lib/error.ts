@@ -1,27 +1,43 @@
 import { SiteConfigContracts } from "@/config/site";
 
-/**
- * Convert error object to pretty object with error message and severity.
- */
-export function errorToPrettyError(
-  error: any,
-  contracts: SiteConfigContracts
-): {
+interface PrettyError {
   message: string;
   severity: "info" | "error" | undefined;
-} {
-  let message = JSON.stringify(error, (key, value) =>
-    typeof value === "bigint" ? value.toString() : value
-  );
-  let severity: "info" | "error" | undefined = undefined;
-  if (error?.message) {
+}
+
+export function errorToPrettyError(
+  error: unknown
+): PrettyError {
+  let message = "An unknown error occurred.";
+  let severity: "info" | "error" | undefined = "error";
+
+  if (typeof error === "string") {
+    message = error;
+  } else if (error instanceof Error) {
     message = error.message;
+    const anyError = error as any;
+    if (anyError?.cause?.shortMessage) {
+      message = anyError.cause.shortMessage;
+    }
+  } else if (typeof error === "object" && error !== null) {
+    const e = error as { message?: string; cause?: { shortMessage?: string } };
+    if (e?.cause?.shortMessage) {
+      message = e.cause.shortMessage;
+    } else if (e?.message) {
+      message = e.message;
+    } else {
+      try {
+        message = JSON.stringify(error, (_, value) =>
+          typeof value === "bigint" ? value.toString() : value
+        );
+      } catch {
+        message = "Unserializable error object.";
+      }
+    }
   }
-  if (error?.cause?.shortMessage) {
-    message = error.cause.shortMessage;
-  }
+
   return {
-    message: message,
-    severity: severity,
+    message,
+    severity,
   };
 }
