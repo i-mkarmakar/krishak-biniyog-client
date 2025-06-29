@@ -3,7 +3,7 @@ import { Web3Provider } from "@/components/web3-provider";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import "./globals.css";
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 
