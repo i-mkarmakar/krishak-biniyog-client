@@ -5,7 +5,7 @@ import EntityList from "./entity-list";
 import { TokenCard } from "./token-card";
 import { useEffect, useState } from "react";
 import { useAccount, useInfiniteReadContracts } from "wagmi";
-import { isAddressEqual, zeroAddress } from "viem";
+import { isAddressEqual } from "viem";
 import { farmTokenAbi } from "@/contracts/abi/farmToken";
 
 const LIMIT = 42;

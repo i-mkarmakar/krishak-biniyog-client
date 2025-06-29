@@ -35,15 +35,15 @@ export function TokenInvestDialog(props: {
   async function onSubmit() {
     try {
       setIsFormSubmitting(true);
-      // Check public client
+
       if (!publicClient) {
         throw new Error("Public client is not ready");
       }
-      // Check wallet
+
       if (!address || !walletClient) {
         throw new Error("Wallet is not connected");
       }
-      // Check chain
+
       if (chainId !== props.contracts.chain.id) {
         throw new Error(`You need to connect to ${props.contracts.chain.name}`);
       }
@@ -61,27 +61,33 @@ export function TokenInvestDialog(props: {
           account: address,
           value: parseEther(formatEther(BigInt(props.tokenInvestmentAmount))),
         });
+
         const investTxHash = await walletClient.writeContract(investRequest);
+
         await publicClient.waitForTransactionReceipt({
           hash: investTxHash,
         });
       }
 
-      // Show success message
       toast({
         title: "Investment made 👌",
       });
+
       props.onInvest?.();
       setIsOpen(false);
-    } catch (error: any) {
-      handleError(error, true);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        handleError(error, true);
+      } else {
+        handleError(new Error("An unknown error occurred."), true);
+      }
     } finally {
       setIsFormSubmitting(false);
     }
   }
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button variant="default" size="sm">
           Invest
@@ -91,8 +97,7 @@ export function TokenInvestDialog(props: {
         <AlertDialogHeader>
           <AlertDialogTitle>
             Are you sure you want to invest{" "}
-            {formatEther(BigInt(props.tokenInvestmentAmount || 0))} ETH in this
-            token?
+            {formatEther(BigInt(props.tokenInvestmentAmount || "0"))} ETH in this token?
           </AlertDialogTitle>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -100,7 +105,8 @@ export function TokenInvestDialog(props: {
           <Button
             variant="default"
             disabled={isFormSubmitting}
-            onClick={onSubmit}>
+            onClick={onSubmit}
+          >
             {isFormSubmitting && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
