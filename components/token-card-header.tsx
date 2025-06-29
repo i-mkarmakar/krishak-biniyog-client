@@ -17,8 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { useEffect, useState } from "react";
-import { ipfsUriToHttpUri, loadJsonFromIpfs } from "@/lib/ipfs";
+import { useState } from "react";
+import { ipfsUriToHttpUri} from "@/lib/ipfs";
 import { Loader2 } from "lucide-react";
 import { TokenSellDialog } from "./token-sell-dialog";
 import { TokenInvestDialog } from "./token-invest-dialog";
@@ -38,11 +38,6 @@ interface TokenCardHeaderProps {
   onUpdate: () => void;
 }
 
-interface PassportData {
-  image: string;
-  name: string;
-  description: string;
-}
 
 export function TokenCardHeader(props: TokenCardHeaderProps): JSX.Element {
   const { address } = useAccount();

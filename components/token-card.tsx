@@ -3,7 +3,6 @@
 
 import { useMemo } from "react";
 import type { Address } from "viem";
-import type { ReadContractsConfig  } from "wagmi";
 import { useReadContract, useReadContracts } from "wagmi";
 import { farmTokenAbi } from "@/contracts/abi/farmToken";
 import { TokenCardHeader } from "./token-card-header";

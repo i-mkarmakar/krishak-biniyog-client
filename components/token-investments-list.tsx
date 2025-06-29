@@ -1,12 +1,13 @@
 "use client";
 
-import { SiteConfigContracts } from "@/config/site";
-import EntityList from "./entity-list";
-import { TokenCard } from "./token-card";
 import { useEffect, useState } from "react";
 import { useAccount, useInfiniteReadContracts } from "wagmi";
 import { isAddressEqual } from "viem";
+
 import { farmTokenAbi } from "@/contracts/abi/farmToken";
+import { SiteConfigContracts } from "@/config/site";
+import EntityList from "./entity-list";
+import { TokenCard } from "./token-card";
 
 const LIMIT = 42;
 
@@ -14,50 +15,38 @@ export function TokenInvestmentsList(props: {
   contracts: SiteConfigContracts;
 }) {
   const { address } = useAccount();
-  const [smartAccountAddress, setSmartAccountAddress] = useState<
-    `0x${string}` | undefined
-  >();
-  const [tokens, setTokens] = useState<string[] | undefined>();
 
-  const { data } = useInfiniteReadContracts<readonly [
-    {
-      address: `0x${string}`;
-      abi: typeof farmTokenAbi;
-      functionName: "getParams";
-      args: [bigint];
-      chainId: number;
-    }
-  ]>({
-    cacheKey: `token_investments_list_${props.contracts.chain.id.toString()}`,
+  const [smartAccountAddress, setSmartAccountAddress] = useState<`0x${string}` | undefined>();
+  const [tokens, setTokens] = useState<string[]>([]);
 
-    contracts: (pageParam: number) => {
-      return [...new Array(LIMIT)].map(
-        (_, i) =>
-        ({
-          address: props.contracts.farmToken,
-          abi: farmTokenAbi,
-          functionName: "getParams",
-          args: [BigInt(pageParam + i)],
-          chainId: props.contracts.chain.id,
-        } as const)
-      );
-    },
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteReadContracts({
+    cacheKey: `token_investments_list_${props.contracts.chain.id}`,
+    contracts: ({ pageParam = 0 }) =>
+      Array.from({ length: LIMIT }, (_, i) => ({
+        address: props.contracts.farmToken,
+        abi: farmTokenAbi,
+        functionName: "getParams",
+        args: [BigInt(pageParam + i)],
+        chainId: props.contracts.chain.id,
+      })),
 
     query: {
       initialPageParam: 0,
-      getNextPageParam: (_lastPage: unknown, _allPages: unknown[], lastPageParam: number) => {
-        return lastPageParam + 1;
-      },
+      getNextPageParam: (_lastPage: any, _allPages: any, lastPageParam: number) =>
+        lastPageParam + LIMIT,
     },
   });
-
-
 
   useEffect(() => {
     setSmartAccountAddress(undefined);
     if (address) {
       if (props.contracts.accountAbstractionSuported) {
-        // TODO: Implement
+        // TODO: Implement smart account abstraction support
       } else {
         setSmartAccountAddress(address);
       }
@@ -65,31 +54,30 @@ export function TokenInvestmentsList(props: {
   }, [address, props.contracts]);
 
   useEffect(() => {
-    setTokens(undefined);
     if (address && data && smartAccountAddress) {
-      const tokens: string[] = [];
-      const dataFirstPage = (data as any).pages[0];
-      for (let i = 0; i < dataFirstPage.length; i++) {
-        const dataPageElement = dataFirstPage[i];
-        const investor = dataPageElement?.result?.investor;
+      const foundTokens: string[] = [];
 
-        if (
-          investor &&
-          isAddressEqual(investor, smartAccountAddress)
-        ) {
-          tokens.push(String(i));
-        }
-      }
+      data.pages.forEach((page: any[], pageIndex: number) => {
+        page.forEach((contractResult: any, index: number) => {
+          const investor = contractResult?.result?.investor;
+          if (investor && isAddressEqual(investor, smartAccountAddress)) {
+            const tokenId = String(pageIndex * LIMIT + index);
+            foundTokens.push(tokenId);
+          }
+        });
+      });
 
-      setTokens(tokens);
+      setTokens(foundTokens);
+    } else {
+      setTokens([]);
     }
   }, [address, data, smartAccountAddress]);
 
   return (
     <EntityList
-      entities={tokens?.toReversed()}
+      entities={[...tokens].reverse()}
       renderEntityCard={(token, index) => (
-        <TokenCard key={index} token={token} contracts={props.contracts} />
+        <TokenCard token={token} contracts={props.contracts} />
       )}
       noEntitiesText={`No tokens on ${props.contracts.chain.name} 😐`}
       className="gap-6"

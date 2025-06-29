@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { isAddress, parseEther } from "viem";
+import { parseEther } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { z } from "zod";
 import { Button } from "./ui/button";
@@ -128,10 +128,12 @@ export function TokenCreateForm() {
 
       toast({ title: "Token created 👌" });
       router.push("/farm");
-    } catch (error: any) {
-      handleError(error, true);
-      setIsFormSubmitting(false);
-    }
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        handleError(error.message, true);
+      } else {
+        handleError("Unknown error occurred", true);
+      }
   }
 
 
